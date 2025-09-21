@@ -88,11 +88,6 @@ export class MailSchedulerController {
     param: MailContentIdParamDto,
     @Res() res: Response,
   ) {
-    console.log(
-      'MailSchedulerController@deleteMailSchedule:: mailContentId',
-      param.mailContentId,
-      typeof param.mailContentId,
-    );
     const { message } = await this.mailService.deleteScheduleSendMessageToQueue(
       {
         mailContentId: param.mailContentId,

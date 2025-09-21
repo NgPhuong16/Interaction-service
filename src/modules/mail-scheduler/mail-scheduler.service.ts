@@ -90,7 +90,6 @@ export class MailSchedulerService {
       url: `${ADMIN_BACKEND_ROUTE.MAIL_DETAIL}/${mailContentId}`,
     });
     const mailContentInfoWithReceivers = response?.data;
-    console.log();
     const messageId = await this.mailProviderService.enqueueMail(
       mailContentInfoWithReceivers,
     );

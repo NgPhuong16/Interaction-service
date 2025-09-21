@@ -7,7 +7,8 @@ import { Injectable } from '@nestjs/common';
 export class EmailRenderService {
   private readonly templatesPath = path.join(__dirname, 'templates');
   renderTemplate(templateName: string, data: Record<string, any>): string {
-    const templateFile = path.join(this.templatesPath, `${templateName}.hbs`);
+    // set default mail-marketing template
+    const templateFile = path.join(this.templatesPath, `mail-marketing.hbs`);
     const layoutFile = path.join(this.templatesPath, 'layout.hbs');
 
     const templateSource = fs.readFileSync(templateFile, 'utf-8');

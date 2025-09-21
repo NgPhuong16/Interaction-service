@@ -25,7 +25,6 @@ export class MailProviderQueueService {
       QueueUrl: appConfig().SQS_QUEUE_URL,
       MessageBody: JSON.stringify(mailMessage),
     });
-    console.log('MailProviderQueueService@sendToQueue:: ', command);
     try {
       const { MessageId } = await this.sqs.send(command);
       console.log('MailProviderQueueService@sendToQueue:: ', MessageId);

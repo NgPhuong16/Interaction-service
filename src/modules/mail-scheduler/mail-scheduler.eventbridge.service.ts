@@ -42,11 +42,6 @@ export class MailSchedulerEventBridgeService {
     const scheduleDateString = formatDateTime(scheduleTime);
     const scheduleName = convertIdToScheduleRuleName(mailContentId);
 
-    console.log(
-      'MailSchedulerEventBridgeService@setScheduleRule scheduleDateString:',
-      scheduleDateString,
-    );
-
     const command = new CreateScheduleCommand({
       Name: scheduleName,
       ScheduleExpression: `at(${scheduleDateString})`,
@@ -85,10 +80,6 @@ export class MailSchedulerEventBridgeService {
   }: MailSchedulerUpdatePayloadInterface) {
     const scheduleDateString = formatDateTime(scheduleTime);
     const scheduleName = convertIdToScheduleRuleName(mailContentId);
-    console.log(
-      'MailSchedulerEventBridgeService@updateScheduleRule scheduleDateString:',
-      scheduleDateString,
-    );
 
     const command = new UpdateScheduleCommand({
       Name: scheduleName,

@@ -8,10 +8,6 @@ export class MailConsumerProcessor {
 
   async processQueue(event: SQSEvent): Promise<void> {
     console.log('MailConsumerProcessor@processQueue:: event', event);
-    console.log(
-      'MailConsumerProcessor@processQueue:: event.Records',
-      event.Records,
-    );
     for (const record of event.Records) {
       const { messageId, body } = record;
       const payload = JSON.parse(body);

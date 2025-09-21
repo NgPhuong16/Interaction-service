@@ -1,82 +1,289 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Interaction Service - Mail Management System
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+A serverless email management service built with NestJS that integrates with AWS services (SES, SQS, EventBridge Scheduler) to provide comprehensive email sending, scheduling, and processing capabilities.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## 🏗️ Architecture Overview
 
-# Furusato Tax For Company Mail Service Backend
+This service consists of three main components:
 
-## Overview
+### 1. Mail Provider (Immediate Email Processing)
+- **Endpoint**: `POST /mail/immediately`
+- **Function**: `mail-provider`
+- **Purpose**: Accepts email requests and queues them for immediate processing
+- **Flow**: API Gateway → Lambda → SQS Queue
 
-This project is a microservice built with [NestJS](https://nestjs.com/) for handling email delivery, scheduling, and integration with AWS SES, SQS, and EventBridge Scheduler. It is designed to support the Furusato Tax for Company platform, enabling automated and scheduled email communications.
+### 2. Mail Consumer (Email Sending)
+- **Function**: `mail-consumer`
+- **Trigger**: SQS messages
+- **Purpose**: Processes queued emails and sends them via AWS SES
+- **Features**: Template rendering with Handlebars, status tracking
 
-## Features
+### 3. Mail Scheduler (Scheduled Email Processing)
+- **Endpoints**: 
+  - `POST /mail/scheduled` - Create scheduled email
+  - `PATCH /mail/scheduled/:mailContentId` - Update schedule
+  - `DELETE /mail/scheduled/:mailContentId` - Delete schedule
+  - `DELETE /mail/scheduled/batch` - Batch delete schedules
+- **Function**: `mail-scheduler`
+- **Purpose**: Manages scheduled emails using AWS EventBridge Scheduler
+- **Flow**: API Gateway → Lambda → EventBridge Scheduler → Lambda → SQS → SES
 
-- **Send Emails Immediately:** Push email jobs to AWS SQS and deliver via AWS SES.
-- **Schedule Emails:** Use AWS EventBridge Scheduler to schedule emails for future delivery.
-- **Admin Backend Integration:** Fetch email content and recipient lists from an admin backend service.
-- **API Key Security:** Secure internal endpoints with API key validation.
-- **Serverless Ready:** Deployable to AWS Lambda using the Serverless Framework.
+## 🚀 AWS Services Integration
 
-## Project Structure
+### Amazon SES (Simple Email Service)
+- Sends emails with HTML content
+- Supports reply-to addresses
+- Configurable sender email
 
-- `src/modules/mail-provider`: Handles sending emails to SQS.
-- `src/modules/mail-scheduler`: Handles scheduling emails via EventBridge Scheduler.
-- `src/modules/mail-consumer`: Consumes SQS messages and sends emails via AWS SES.
-- `src/helpers`: Utility functions and admin backend API requests.
-- `src/utils`: Interfaces, types, and shared utilities.
+### Amazon SQS (Simple Queue Service)
+- Message queue for email processing
+- Batch processing (up to 10 messages)
+- 5-second batching window for efficiency
 
-## Getting Started
+### AWS EventBridge Scheduler
+- Schedules emails for future delivery
+- One-time execution with flexible time windows
+- Integration with Lambda functions
 
-### Prerequisites
+### AWS Lambda
+- Serverless compute for all email operations
+- Auto-scaling based on demand
+- VPC configuration for security
 
-- Node.js (v18+ recommended)
-- AWS account with SES, SQS, and EventBridge Scheduler permissions
-- Serverless Framework (for deployment)
+## 📋 Prerequisites
 
-### Installation
+- Node.js 22.x
+- AWS Account with appropriate permissions
+- Serverless Framework CLI
+
+## 🛠️ Setup & Installation
+
+### 1. Clone and Install Dependencies
 
 ```bash
+git clone <repository-url>
+cd Interaction-service
 npm install
 ```
 
-### Environment Configuration
+### 2. Environment Configuration
 
-Copy `.env.example` to `.env` and update the environment variables to match your setup.
+Create environment files for each stage (`.env.dev`, `.env.stg`, `.env.prod`):
 
-### Running the Project
+```env
+# AWS Configuration
+AWS_REGION=ap-northeast-1
+AWS_ACCESS_KEY_ID=your-access-key
+AWS_SECRET_ACCESS_KEY=your-secret-key
 
-```bash
-# development
-npm run build
-serverless offline
+# SQS Configuration
+SQS_QUEUE_URL=https://sqs.ap-northeast-1.amazonaws.com/account/queue-name
+SQS_QUEUE_ARN=arn:aws:sqs:ap-northeast-1:account:queue-name
+
+# SES Configuration
+SES_SENDER_EMAIL=noreply@yourdomain.com
+
+# Lambda Configuration
+LAMBDA_SCHEDULER_ARN=arn:aws:lambda:region:account:function:mail-scheduler
+SCHEDULER_ROLE_ARN=arn:aws:iam::account:role/scheduler-role
+
+# API Security
+GLOBAL_API_KEY=your-api-key
+
+# Backend Integration
+ADMIN_BACKEND_DOMAIN=https://your-backend-domain.com
+ADMIN_BACKEND_API_KEY=your-backend-api-key
 ```
 
-### Serverless Deployment
+### 3. AWS Resources Setup
 
-This project supports deployment to AWS Lambda using the Serverless Framework.
+The service requires these AWS resources to be created:
 
+- **SQS Queue**: For email message processing
+- **IAM Roles**: For Lambda execution and EventBridge Scheduler
+- **VPC Configuration**: Security groups and subnets
+
+## 🚀 Deployment
+
+### Development
+```bash
+npm run start:dev
+```
+
+### Serverless Local Development
+```bash
+npm run start:sls
+```
+
+### Production Deployment
 ```bash
 npm run deploy
+# or with specific stage
+STAGE=prod npm run deploy
 ```
 
-## Contact
+## 📡 API Endpoints
 
-For questions or support, please contact the Furusato technical team.
+### Immediate Email Sending
+
+**POST** `/mail/immediately`
+
+Send an email immediately by queuing it for processing.
+
+```json
+{
+  "mailContentId": 123,
+  "to": ["recipient@example.com"],
+  "subject": "Your Email Subject",
+  "templateName": "mail-marketing",
+  "context": {
+    "userName": "John Doe",
+    "customData": "value"
+  },
+  "replyEmails": ["support@example.com"]
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Mail enqueued successfully",
+  "metadata": {
+    "messageId": "sqs-message-id"
+  }
+}
+```
+
+### Scheduled Email Management
+
+#### Create Scheduled Email
+**POST** `/mail/scheduled`
+
+```json
+{
+  "mailContentId": 123,
+  "scheduleTime": "2025-09-22T10:00:00Z"
+}
+```
+
+#### Update Scheduled Email
+**PATCH** `/mail/scheduled/:mailContentId`
+
+```json
+{
+  "scheduleTime": "2025-09-22T15:00:00Z"
+}
+```
+
+#### Delete Scheduled Email
+**DELETE** `/mail/scheduled/:mailContentId`
+
+#### Batch Delete Scheduled Emails
+**DELETE** `/mail/scheduled/batch`
+
+```json
+{
+  "mailContentIdArr": [123, 124, 125]
+}
+```
+
+## 📧 Email Templates
+
+The service uses Handlebars templates located in `src/modules/mail-consumer/email-render/templates/`:
+
+- `layout.hbs` - Base HTML layout
+- `mail-marketing.hbs` - Marketing email template
+
+### Template Structure
+```handlebars
+{{!-- mail-marketing.hbs --}}
+<div class="email-content">
+  <h1>{{context.title}}</h1>
+  <p>Hello {{context.userName}},</p>
+  <p>{{context.message}}</p>
+</div>
+```
+
+## 🔧 Configuration
+
+### Serverless Configuration
+- **Runtime**: Node.js 22.x
+- **Timeout**: 29 seconds
+- **Memory**: 256 MB
+- **VPC**: Configured per environment
+
+### Environment-Specific Settings
+- **Development**: `dev` stage with development VPC
+- **Staging**: `stg` stage with staging VPC  
+- **Production**: `prod` stage with production VPC
+
+## 🏃‍♂️ Development Scripts
+
+```bash
+# Development
+npm run start:dev          # Start in watch mode
+npm run start:sls          # Start serverless offline
+
+# Building
+npm run build              # Build the project
+
+# Testing
+npm run test               # Run unit tests
+npm run test:e2e           # Run end-to-end tests
+npm run test:cov           # Run tests with coverage
+
+# Code Quality
+npm run lint               # Lint code
+npm run format             # Format code
+```
+
+## 📊 Monitoring & Logging
+
+- **CloudWatch Logs**: All Lambda functions log to CloudWatch
+- **Error Tracking**: Comprehensive error handling and logging
+- **Status Updates**: Mail status tracking through admin backend integration
+
+## 🔒 Security
+
+- **API Key Authentication**: Global API key for endpoint protection
+- **VPC Configuration**: Lambda functions run in VPC for security
+- **IAM Roles**: Least privilege access for AWS resources
+- **Input Validation**: DTO validation using class-validator
+
+## 🚨 Error Handling
+
+The service includes robust error handling:
+- **Queue Processing Errors**: Failed messages are logged and can be retried
+- **Schedule Validation**: Prevents scheduling emails in the past
+- **SES Integration**: Handles email sending failures gracefully
+- **Backend Communication**: Manages admin backend API failures
+
+## 📚 Dependencies
+
+### Key Production Dependencies
+- **@nestjs/core**: NestJS framework
+- **@aws-sdk/client-ses**: AWS SES integration
+- **@aws-sdk/client-sqs**: AWS SQS integration  
+- **@aws-sdk/client-scheduler**: AWS EventBridge Scheduler
+- **handlebars**: Email template engine
+- **dayjs**: Date manipulation
+- **axios**: HTTP client for backend communication
+
+### Development Dependencies
+- **serverless-offline**: Local serverless development
+- **typescript**: TypeScript support
+- **jest**: Testing framework
+- **eslint**: Code linting
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature-name`
+3. Commit changes: `git commit -am 'Add feature'`
+4. Push to branch: `git push origin feature-name`
+5. Submit a pull request
+
+## 📄 License
+
+This project is licensed under the UNLICENSED license.

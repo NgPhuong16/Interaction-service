@@ -7,7 +7,7 @@ import { MailSchedulerModule } from '../modules/mail-scheduler/mail-scheduler.mo
 export const handler: Handler = async (
   event: MailSchedulerCreatePayloadInterface,
 ) => {
-  console.log('Event:', event);
+  console.log('Mail Scheduler Event::', event);
   const app = await NestFactory.createApplicationContext(MailSchedulerModule);
   const processor = app.get(MailSchedulerService);
   try {

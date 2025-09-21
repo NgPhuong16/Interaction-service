@@ -1,15 +1,17 @@
 import dayjs, { Dayjs } from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
 dayjs.extend(customParseFormat);
 dayjs.extend(utc);
-import { DATE_FORMAT } from './constants';
+dayjs.extend(timezone);
+
+import { DATE_FORMAT, TIME_ZONE } from './constants';
 
 export function formatDateTime(
   utcDateString: Dayjs | string,
   formatString: string = DATE_FORMAT.SCHEDULE_FORMAT_RULE,
 ): string {
-  console.log('formatDateTime', utcDateString, formatString);
   return dayjs.utc(utcDateString).format(formatString);
 }
 
@@ -23,6 +25,22 @@ export function getCurrentDateTime(): Dayjs {
   return dayjs();
 }
 
-export const currentDay = getCurrentDateTime().format(
-  DATE_FORMAT.yyyymmddhhmmss,
-);
+export function getDateAtTZ({
+  date,
+  timeZone,
+}: {
+  date: Dayjs;
+  timeZone?: string;
+}): Dayjs {
+  return date.tz(timeZone);
+}
+
+export function formatDate({
+  date,
+  formatType,
+}: {
+  date: Dayjs;
+  formatType?: string;
+}): string {
+  return date.format(formatType);
+}

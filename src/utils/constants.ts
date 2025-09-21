@@ -21,6 +21,7 @@ export const DATE_FORMAT = {
 
 export const TIME_ZONE = {
   UTC: 'UTC',
+  TOKYO: 'Asia/Tokyo',
 };
 
 export const EVENT_BRIDGE_SCHEDULER = {

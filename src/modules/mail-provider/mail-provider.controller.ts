@@ -16,7 +16,6 @@ export class MailProviderController {
   ) {
     const { mailContentId, to, subject, templateName, context, replyEmails } =
       mailPayload;
-    console.log('Mail Payload:', mailPayload);
     const messageId = await this.mailService.enqueueMail({
       mailContentId,
       to,

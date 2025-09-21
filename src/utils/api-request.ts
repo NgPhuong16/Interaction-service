@@ -1,11 +1,11 @@
 const axios = require('axios');
 
 interface ApiCallOptions {
-  method?: string; // Phương thức HTTP (GET, POST, PUT, DELETE, ...)
-  url: string; // URL của API cần gọi (Bắt buộc)
-  data?: object | null; // Dữ liệu gửi đi trong body (cho POST, PUT, PATCH)
-  params?: object | null; // Các tham số query string (cho GET)
-  headers?: object; // Các headers tùy chỉnh muốn gửi kèm
+  method?: string;
+  url: string;
+  data?: object | null;
+  params?: object | null;
+  headers?: object;
 }
 
 /**
@@ -33,7 +33,6 @@ export async function callApi({
 }: ApiCallOptions) {
   // Kiểm tra URL có được cung cấp không
   if (!url) {
-    console.error('Lỗi: URL là bắt buộc để gọi API.');
     return {
       success: false,
       data: null,
@@ -55,6 +54,5 @@ export async function callApi({
   if (config.method !== 'GET' && data !== undefined) {
     config.data = data;
   }
-  console.log('API Request Config:', config);
   return await axios(config);
 }
